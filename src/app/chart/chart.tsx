@@ -42,11 +42,6 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
   });
 
   const generateMockData = () => {
-    const timestamp = "2023-07-03 00:00:00+05";
-    const numericValue = moment(timestamp).valueOf();
-
-    console.log("numericValue", numericValue);
-
     const data: any = [];
     const dataCount = 10;
     const startTime = +new Date();
@@ -86,26 +81,29 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
     };
 
     const tempData: any = [];
-    filteredData.slice(0, 60).map((data, index) => {
+    // categories.forEach(function (category, index) {
+    filteredData.map((data) => {
       tempData.push({
         name: data.sourceTag,
         value: [
           categories.indexOf(data.date),
+          // index,
           moment(data.minute_window).valueOf(),
           moment(data.minute_window, "YYYY-MM-DD HH:mm:ss")
             .add(5, "minutes")
             .valueOf(),
-          5,
+          300000,
         ],
         itemStyle: {
           color: colorMap[data.sourceTag],
         },
       });
     });
+    // });
+
     console.log("tempData", tempData);
 
     categories.forEach(function (category, index) {
-      // console.log("Category", category);
       var baseTime = startTime;
       for (var i = 0; i < dataCount; i++) {
         var typeItem = types[Math.round(Math.random() * (types.length - 1))];
@@ -120,7 +118,6 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
         baseTime += Math.round(Math.random() * 2000);
       }
     });
-
     console.log("created data: ", data);
 
     return tempData;
@@ -160,7 +157,8 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
         height: 300,
       },
       xAxis: {
-        min: +new Date(),
+        // min: 1688324400000,
+        // max: 1688410500000,
         scale: true,
         axisLabel: {
           formatter: function (val: number) {
