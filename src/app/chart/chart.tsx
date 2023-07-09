@@ -3,6 +3,7 @@
 import React, { FC } from "react";
 import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
+import moment from "moment";
 
 interface Props {
   apiData: any;
@@ -41,37 +42,70 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
   });
 
   const generateMockData = () => {
+    const timestamp = "2023-07-03 00:00:00+05";
+    const numericValue = moment(timestamp).valueOf();
+
+    console.log("numericValue", numericValue);
+
     const data: any = [];
     const dataCount = 10;
     const startTime = +new Date();
     const categories = last7Days;
-    const types =
-      // [
-      //   { name: "JS Heap", color: "#7b9ce1" },
-      //   { name: "Documents", color: "#bd6d6c" },
-      //   { name: "Nodes", color: "#75d874" },
-      //   { name: "Listeners", color: "#e0bc78" },
-      //   { name: "GPU Memory", color: "#dc77dc" },
-      //   { name: "GPU", color: "#72b362" },
-      // ];
-      [
-        { name: "Main", color: "#B798F5" },
-        { name: "Solar", color: "#02E10C" },
-        { name: "DG", color: "#403F3D" },
-        { name: "Battery", color: "#FDE602" },
-        { name: "Solar+Battery", color: "#86B0FF" },
-        { name: "Battery+Solar", color: "#86B0FF" },
-        { name: "Main+Solar", color: "#7243D0" },
-        { name: "Main+Battery", color: "#32864B" },
-        { name: "Main+Solar+Battery", color: "#8BC486" },
-        { name: "DG+Battery", color: "magenta" },
-        { name: "DG+Solar+Battery", color: "cyan" },
-        { name: "DG+Battery+Solar", color: "cyan" },
-        { name: "Undetermined", color: "#BBE3FD" },
-        { name: "", color: "white" },
-      ];
+    const types = [
+      { name: "Main", color: "#B798F5" },
+      { name: "Solar", color: "#02E10C" },
+      { name: "DG", color: "#403F3D" },
+      { name: "Battery", color: "#FDE602" },
+      { name: "Solar+Battery", color: "#86B0FF" },
+      { name: "Battery+Solar", color: "#86B0FF" },
+      { name: "Main+Solar", color: "#7243D0" },
+      { name: "Main+Battery", color: "#32864B" },
+      { name: "Main+Solar+Battery", color: "#8BC486" },
+      { name: "DG+Battery", color: "magenta" },
+      { name: "DG+Solar+Battery", color: "cyan" },
+      { name: "DG+Battery+Solar", color: "cyan" },
+      { name: "Undetermined", color: "#BBE3FD" },
+      { name: "", color: "white" },
+    ];
+
+    const colorMap: any = {
+      Main: "#B798F5",
+      Solar: "#02E10C",
+      DG: "#403F3D",
+      Battery: "#FDE602",
+      "Solar+Battery": "#86B0FF",
+      "Battery+Solar": "#86B0FF",
+      "Main+Solar": "#7243D0",
+      "Main+Battery": "#32864B",
+      "Main+Solar+Battery": "#8BC486",
+      "DG+Battery": "magenta",
+      "DG+Solar+Battery": "cyan",
+      "DG+Battery+Solar": "cyan",
+      Undetermined: "#BBE3FD",
+      "": "white",
+    };
+
+    const tempData: any = [];
+    filteredData.slice(0, 60).map((data, index) => {
+      tempData.push({
+        name: data.sourceTag,
+        value: [
+          categories.indexOf(data.date),
+          moment(data.minute_window).valueOf(),
+          moment(data.minute_window, "YYYY-MM-DD HH:mm:ss")
+            .add(5, "minutes")
+            .valueOf(),
+          5,
+        ],
+        itemStyle: {
+          color: colorMap[data.sourceTag],
+        },
+      });
+    });
+    console.log("tempData", tempData);
 
     categories.forEach(function (category, index) {
+      // console.log("Category", category);
       var baseTime = startTime;
       for (var i = 0; i < dataCount; i++) {
         var typeItem = types[Math.round(Math.random() * (types.length - 1))];
@@ -83,12 +117,13 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
             color: typeItem.color,
           },
         });
-        console.log("created data: ", data);
         baseTime += Math.round(Math.random() * 2000);
       }
     });
 
-    return data;
+    console.log("created data: ", data);
+
+    return tempData;
   };
 
   const renderChart = () => {
@@ -129,7 +164,8 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
         scale: true,
         axisLabel: {
           formatter: function (val: number) {
-            return Math.max(0, val - +new Date()) + " ms";
+            // return Math.max(0, val - +new Date()) + " ms";
+            return moment(val).format("HH:mm");
           },
         },
       },
