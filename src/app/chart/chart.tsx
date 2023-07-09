@@ -26,7 +26,6 @@ const getLast7DaysData = (data: any[]) => {
     const itemDate = new Date(item.date);
     return itemDate >= lastWeekDate && itemDate <= currentDate;
   });
-
   console.log("last 7 days", filteredData);
 
   return filteredData;
@@ -44,7 +43,6 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
   const generateMockData = () => {
     const data: any = [];
     const dataCount = 10;
-    const startTime = +new Date();
     const categories = last7Days;
     const types = [
       { name: "Main", color: "#B798F5" },
@@ -81,30 +79,35 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
     };
 
     const tempData: any = [];
-    // categories.forEach(function (category, index) {
-    filteredData.map((data) => {
-      tempData.push({
-        name: data.sourceTag,
-        value: [
-          categories.indexOf(data.date),
-          // index,
-          moment(data.minute_window).valueOf(),
-          moment(data.minute_window, "YYYY-MM-DD HH:mm:ss")
-            .add(5, "minutes")
-            .valueOf(),
-          300000,
-        ],
-        itemStyle: {
-          color: colorMap[data.sourceTag],
-        },
-      });
+    categories.forEach(function (category, index) {
+      filteredData
+        .filter((object) => object.date === categories[index])
+        .map((data) => {
+          console.log("check index", categories.indexOf(data.date), index);
+          if (categories.indexOf(data.date) === index) {
+            tempData.push({
+              name: data.sourceTag,
+              value: [
+                // categories.indexOf(data.date),
+                index,
+                moment(data.minute_window).valueOf(),
+                moment(data.minute_window, "YYYY-MM-DD HH:mm:ss")
+                  .add(5, "minutes")
+                  .valueOf(),
+                300000,
+                data.minute_window,
+              ],
+              itemStyle: {
+                color: colorMap[data.sourceTag],
+              },
+            });
+          }
+        });
     });
-    // });
-
     console.log("tempData", tempData);
 
     categories.forEach(function (category, index) {
-      var baseTime = startTime;
+      let baseTime = 0;
       for (var i = 0; i < dataCount; i++) {
         var typeItem = types[Math.round(Math.random() * (types.length - 1))];
         var duration = Math.round(Math.random() * 10000);
@@ -133,7 +136,12 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
           name: any;
           value: string[];
         }) {
-          return params.marker + params.name + ": " + params.value[3] + " ms";
+          return (
+            params.marker +
+            params.name +
+            ": " +
+            moment(params.value[4]).format("YYYY-MM-DD HH:mm")
+          );
         },
       },
       title: {
