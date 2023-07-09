@@ -8,8 +8,33 @@ interface Props {
   apiData: any;
 }
 
+const getLast7Days = (data: any[]) => {
+  const uniqueDates = [...new Set(data.map((item) => item.date))].sort();
+  console.log("uniqueDates", uniqueDates);
+
+  return uniqueDates;
+};
+
+const getLast7DaysData = (data: any[]) => {
+  const currentDate = new Date();
+  const lastWeekDate = new Date(
+    currentDate.getTime() - 7 * 24 * 60 * 60 * 1000
+  );
+
+  const filteredData = data.filter((item) => {
+    const itemDate = new Date(item.date);
+    return itemDate >= lastWeekDate && itemDate <= currentDate;
+  });
+
+  console.log("last 7 days", filteredData);
+
+  return filteredData;
+};
+
 export const ChartContent: FC<Props> = ({ apiData }) => {
   console.log("API data : ", apiData);
+  const filteredData = getLast7DaysData(apiData.data);
+  const last7Days = getLast7Days(filteredData);
 
   echarts.registerTheme("theme", {
     backgroundColor: "#252531",
@@ -19,15 +44,32 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
     const data: any = [];
     const dataCount = 10;
     const startTime = +new Date();
-    const categories = ["categoryA", "categoryB", "categoryC"];
-    const types = [
-      { name: "JS Heap", color: "#7b9ce1" },
-      { name: "Documents", color: "#bd6d6c" },
-      { name: "Nodes", color: "#75d874" },
-      { name: "Listeners", color: "#e0bc78" },
-      { name: "GPU Memory", color: "#dc77dc" },
-      { name: "GPU", color: "#72b362" },
-    ];
+    const categories = last7Days;
+    const types =
+      // [
+      //   { name: "JS Heap", color: "#7b9ce1" },
+      //   { name: "Documents", color: "#bd6d6c" },
+      //   { name: "Nodes", color: "#75d874" },
+      //   { name: "Listeners", color: "#e0bc78" },
+      //   { name: "GPU Memory", color: "#dc77dc" },
+      //   { name: "GPU", color: "#72b362" },
+      // ];
+      [
+        { name: "Main", color: "#B798F5" },
+        { name: "Solar", color: "#02E10C" },
+        { name: "DG", color: "#403F3D" },
+        { name: "Battery", color: "#FDE602" },
+        { name: "Solar+Battery", color: "#86B0FF" },
+        { name: "Battery+Solar", color: "#86B0FF" },
+        { name: "Main+Solar", color: "#7243D0" },
+        { name: "Main+Battery", color: "#32864B" },
+        { name: "Main+Solar+Battery", color: "#8BC486" },
+        { name: "DG+Battery", color: "magenta" },
+        { name: "DG+Solar+Battery", color: "cyan" },
+        { name: "DG+Battery+Solar", color: "cyan" },
+        { name: "Undetermined", color: "#BBE3FD" },
+        { name: "", color: "white" },
+      ];
 
     categories.forEach(function (category, index) {
       var baseTime = startTime;
@@ -38,11 +80,10 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
           name: typeItem.name,
           value: [index, baseTime, (baseTime += duration), duration],
           itemStyle: {
-            normal: {
-              color: typeItem.color,
-            },
+            color: typeItem.color,
           },
         });
+        console.log("created data: ", data);
         baseTime += Math.round(Math.random() * 2000);
       }
     });
@@ -64,7 +105,7 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
         },
       },
       title: {
-        text: "Electrical Power Supply Chart",
+        text: "Power Source Chart",
         left: "center",
       },
       dataZoom: [
@@ -93,7 +134,7 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
         },
       },
       yAxis: {
-        data: ["categoryA", "categoryB", "categoryC"],
+        data: last7Days,
       },
       series: [
         {
