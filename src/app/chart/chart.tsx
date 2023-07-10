@@ -36,6 +36,35 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
   const filteredData = getLast7DaysData(apiData.data);
   const last7Days = getLast7Days(filteredData);
 
+  const timeValues = [
+    "00:00",
+    "01:00",
+    "02:00",
+    "03:00",
+    "04:00",
+    "05:00",
+    "06:00",
+    "07:00",
+    "08:00",
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+    "18:00",
+    "19:00",
+    "20:00",
+    "21:00",
+    "22:00",
+    "23:00",
+  ];
+
+  const tempData: any = [];
+
   echarts.registerTheme("theme", {
     backgroundColor: "#252531",
   });
@@ -105,11 +134,10 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
     //   });
     // // });
 
-    const tempData: any = [];
     let baseTime = 0;
     let categoryIndex = 0;
 
-    filteredData.forEach((data, index) => {
+    filteredData.forEach((data) => {
       const { date, sourceTag, minute_window } = data;
 
       if (date !== categories[categoryIndex]) {
@@ -203,11 +231,23 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
       xAxis: {
         // min: 1688324400000,
         // max: 1688410500000,
-        scale: true,
+        // scale: true,
+        type: "time",
+        data: timeValues.map((time) =>
+          moment(time, "HH:mm").format("YYYY-MM-DD HH:mm")
+        ),
         axisLabel: {
-          formatter: function (val: number) {
+          formatter: function (value: number) {
+            console.log("val: ", value);
             // return Math.max(0, val - +new Date()) + " ms";
-            return moment(val).format("HH:mm");
+            return moment(value).format("HH:mm");
+            // const startTime = moment(tempData[val].value[5], "HH:mm").format(
+            //   "HH:mm"
+            // );
+            // const endTime = moment(tempData[val].value[6], "HH:mm").format(
+            //   "HH:mm"
+            // );
+            // return `${startTime}-${endTime}`;
           },
         },
       },
