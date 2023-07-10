@@ -5,6 +5,8 @@
 User can:
 
 - View a chart with data of Power Supply.
+- Hover over chart to see specific value on tooltip.
+- Interact with zoom slider to see specific sets of data.
 
 ### Project Setup Guidance
 
