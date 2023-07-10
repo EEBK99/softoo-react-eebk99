@@ -10,6 +10,7 @@ interface Props {
 }
 
 const getLast7Days = (data: any[]) => {
+  // Get unique dates from the data and sort them
   const uniqueDates = [...new Set(data.map((item) => item.date))].sort();
   return uniqueDates;
 };
@@ -19,6 +20,7 @@ const getLast7DaysData = (data: any[]) => {
   const lastWeekDate = new Date(
     currentDate.getTime() - 7 * 24 * 60 * 60 * 1000
   );
+  // Filter data for the last 7 days
   const filteredData = data.filter((item) => {
     const itemDate = new Date(item.date);
     return itemDate >= lastWeekDate && itemDate <= currentDate;
@@ -27,12 +29,18 @@ const getLast7DaysData = (data: any[]) => {
 };
 
 export const ChartContent: FC<Props> = ({ apiData }) => {
+  // Register a custom theme for the chart
   echarts.registerTheme("theme", {
     backgroundColor: "#252531",
   });
+
+  // Get filtered data for the last 7 days
   const filteredData = getLast7DaysData(apiData.data);
+
+  // Get the last 7 days as an array of dates
   const last7Days = getLast7Days(filteredData);
 
+  // Generate structured data for the chart
   const generateChartData = () => {
     let index = 0;
     let startTime, endTime;
