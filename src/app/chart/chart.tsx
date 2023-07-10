@@ -26,7 +26,7 @@ const getLast7DaysData = (data: any[]) => {
     const itemDate = new Date(item.date);
     return itemDate >= lastWeekDate && itemDate <= currentDate;
   });
-  console.log("last 7 days", filteredData);
+  console.log("last 7 days data", filteredData);
 
   return filteredData;
 };
@@ -78,31 +78,67 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
       "": "white",
     };
 
+    // const tempData: any = [];
+    // // categories.forEach(function (category, index) {
+    // filteredData
+    //   // .filter((object) => object.date === categories[index])
+    //   .map((data) => {
+    //     // console.log("check index", categories.indexOf(data.date), index);
+    //     // if (categories.indexOf(data.date) === index) {
+    //     tempData.push({
+    //       name: data.sourceTag,
+    //       value: [
+    //         categories.indexOf(data.date),
+    //         // index,
+    //         moment(data.minute_window).valueOf(),
+    //         moment(data.minute_window, "YYYY-MM-DD HH:mm:ss")
+    //           .add(5, "minutes")
+    //           .valueOf(),
+    //         300000,
+    //         data.minute_window,
+    //       ],
+    //       itemStyle: {
+    //         color: colorMap[data.sourceTag],
+    //       },
+    //     });
+    //     // }
+    //   });
+    // // });
+
     const tempData: any = [];
-    categories.forEach(function (category, index) {
-      filteredData
-        .filter((object) => object.date === categories[index])
-        .map((data) => {
-          console.log("check index", categories.indexOf(data.date), index);
-          if (categories.indexOf(data.date) === index) {
-            tempData.push({
-              name: data.sourceTag,
-              value: [
-                // categories.indexOf(data.date),
-                index,
-                moment(data.minute_window).valueOf(),
-                moment(data.minute_window, "YYYY-MM-DD HH:mm:ss")
-                  .add(5, "minutes")
-                  .valueOf(),
-                300000,
-                data.minute_window,
-              ],
-              itemStyle: {
-                color: colorMap[data.sourceTag],
-              },
-            });
-          }
-        });
+    let baseTime = 0;
+    let categoryIndex = 0;
+
+    filteredData.forEach((data, index) => {
+      const { date, sourceTag, minute_window } = data;
+
+      if (date !== categories[categoryIndex]) {
+        categoryIndex++;
+        baseTime = 0;
+      }
+      const typeItem = {
+        name: sourceTag,
+        color: colorMap[sourceTag],
+      };
+
+      const duration = moment(minute_window)
+        .add(5, "minutes")
+        .diff(moment(minute_window));
+
+      tempData.push({
+        name: typeItem.name,
+        value: [
+          categoryIndex,
+          baseTime,
+          baseTime + duration,
+          duration,
+          minute_window,
+        ],
+        itemStyle: {
+          color: typeItem.color,
+        },
+      });
+      baseTime += duration;
     });
     console.log("tempData", tempData);
 
