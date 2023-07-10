@@ -11,8 +11,6 @@ interface Props {
 
 const getLast7Days = (data: any[]) => {
   const uniqueDates = [...new Set(data.map((item) => item.date))].sort();
-  console.log("uniqueDates", uniqueDates);
-
   return uniqueDates;
 };
 
@@ -21,75 +19,25 @@ const getLast7DaysData = (data: any[]) => {
   const lastWeekDate = new Date(
     currentDate.getTime() - 7 * 24 * 60 * 60 * 1000
   );
-
   const filteredData = data.filter((item) => {
     const itemDate = new Date(item.date);
     return itemDate >= lastWeekDate && itemDate <= currentDate;
   });
-  console.log("last 7 days data", filteredData);
-
   return filteredData;
 };
 
 export const ChartContent: FC<Props> = ({ apiData }) => {
-  console.log("API data : ", apiData);
-  const filteredData = getLast7DaysData(apiData.data);
-  const last7Days = getLast7Days(filteredData);
-
-  const timeValues = [
-    "00:00",
-    "01:00",
-    "02:00",
-    "03:00",
-    "04:00",
-    "05:00",
-    "06:00",
-    "07:00",
-    "08:00",
-    "09:00",
-    "10:00",
-    "11:00",
-    "12:00",
-    "13:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00",
-    "18:00",
-    "19:00",
-    "20:00",
-    "21:00",
-    "22:00",
-    "23:00",
-  ];
-
-  const tempData: any = [];
-
   echarts.registerTheme("theme", {
     backgroundColor: "#252531",
   });
+  const filteredData = getLast7DaysData(apiData.data);
+  const last7Days = getLast7Days(filteredData);
 
-  const generateMockData = () => {
-    const data: any = [];
-    const dataCount = 10;
-    const categories = last7Days;
-    const types = [
-      { name: "Main", color: "#B798F5" },
-      { name: "Solar", color: "#02E10C" },
-      { name: "DG", color: "#403F3D" },
-      { name: "Battery", color: "#FDE602" },
-      { name: "Solar+Battery", color: "#86B0FF" },
-      { name: "Battery+Solar", color: "#86B0FF" },
-      { name: "Main+Solar", color: "#7243D0" },
-      { name: "Main+Battery", color: "#32864B" },
-      { name: "Main+Solar+Battery", color: "#8BC486" },
-      { name: "DG+Battery", color: "magenta" },
-      { name: "DG+Solar+Battery", color: "cyan" },
-      { name: "DG+Battery+Solar", color: "cyan" },
-      { name: "Undetermined", color: "#BBE3FD" },
-      { name: "", color: "white" },
-    ];
+  const generateChartData = () => {
+    let index = 0;
+    let startTime, endTime;
 
+    const structuredData: any = [];
     const colorMap: any = {
       Main: "#B798F5",
       Solar: "#02E10C",
@@ -107,91 +55,32 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
       "": "white",
     };
 
-    // const tempData: any = [];
-    // // categories.forEach(function (category, index) {
-    // filteredData
-    //   // .filter((object) => object.date === categories[index])
-    //   .map((data) => {
-    //     // console.log("check index", categories.indexOf(data.date), index);
-    //     // if (categories.indexOf(data.date) === index) {
-    //     tempData.push({
-    //       name: data.sourceTag,
-    //       value: [
-    //         categories.indexOf(data.date),
-    //         // index,
-    //         moment(data.minute_window).valueOf(),
-    //         moment(data.minute_window, "YYYY-MM-DD HH:mm:ss")
-    //           .add(5, "minutes")
-    //           .valueOf(),
-    //         300000,
-    //         data.minute_window,
-    //       ],
-    //       itemStyle: {
-    //         color: colorMap[data.sourceTag],
-    //       },
-    //     });
-    //     // }
-    //   });
-    // // });
-
-    let baseTime = 0;
-    let categoryIndex = 0;
-
     filteredData.forEach((data) => {
       const { date, sourceTag, minute_window } = data;
 
-      if (date !== categories[categoryIndex]) {
-        categoryIndex++;
-        baseTime = 0;
+      if (date !== last7Days[index]) {
+        index++;
       }
-      const typeItem = {
-        name: sourceTag,
-        color: colorMap[sourceTag],
-      };
 
-      const duration = moment(minute_window)
+      startTime = moment(minute_window, "YYYY-MM-DD HH:mm").valueOf();
+      endTime = moment(minute_window, "YYYY-MM-DD HH:mm")
         .add(5, "minutes")
-        .diff(moment(minute_window));
+        .valueOf();
 
-      tempData.push({
-        name: typeItem.name,
-        value: [
-          categoryIndex,
-          baseTime,
-          baseTime + duration,
-          duration,
-          minute_window,
-        ],
+      structuredData.push({
+        name: sourceTag,
+        value: [index, startTime, endTime, 300000, minute_window],
         itemStyle: {
-          color: typeItem.color,
+          color: colorMap[sourceTag],
         },
       });
-      baseTime += duration;
     });
-    console.log("tempData", tempData);
 
-    categories.forEach(function (category, index) {
-      let baseTime = 0;
-      for (var i = 0; i < dataCount; i++) {
-        var typeItem = types[Math.round(Math.random() * (types.length - 1))];
-        var duration = Math.round(Math.random() * 10000);
-        data.push({
-          name: typeItem.name,
-          value: [index, baseTime, (baseTime += duration), duration],
-          itemStyle: {
-            color: typeItem.color,
-          },
-        });
-        baseTime += Math.round(Math.random() * 2000);
-      }
-    });
-    console.log("created data: ", data);
-
-    return tempData;
+    return structuredData;
   };
 
   const renderChart = () => {
-    const data = generateMockData();
+    const data = generateChartData();
 
     const option = {
       tooltip: {
@@ -229,25 +118,10 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
         height: 300,
       },
       xAxis: {
-        // min: 1688324400000,
-        // max: 1688410500000,
-        // scale: true,
         type: "time",
-        data: timeValues.map((time) =>
-          moment(time, "HH:mm").format("YYYY-MM-DD HH:mm")
-        ),
         axisLabel: {
           formatter: function (value: number) {
-            console.log("val: ", value);
-            // return Math.max(0, val - +new Date()) + " ms";
             return moment(value).format("HH:mm");
-            // const startTime = moment(tempData[val].value[5], "HH:mm").format(
-            //   "HH:mm"
-            // );
-            // const endTime = moment(tempData[val].value[6], "HH:mm").format(
-            //   "HH:mm"
-            // );
-            // return `${startTime}-${endTime}`;
           },
         },
       },
