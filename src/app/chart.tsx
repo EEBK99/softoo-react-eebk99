@@ -21,24 +21,19 @@ const getLast7DaysData = (data: any[]) => {
     currentDate.getTime() - 7 * 24 * 60 * 60 * 1000
   );
   // Filter data for the last 7 days
-  const filteredData = data.filter((item) => {
+  const last7DaysData = data.filter((item) => {
     const itemDate = new Date(item.date);
     return itemDate >= lastWeekDate && itemDate <= currentDate;
   });
-  return filteredData;
+  return last7DaysData;
 };
 
 export const ChartContent: FC<Props> = ({ apiData }) => {
-  // Register a custom theme for the chart
-  echarts.registerTheme("theme", {
-    backgroundColor: "#252531",
-  });
-
   // Get filtered data for the last 7 days
-  const filteredData = getLast7DaysData(apiData.data);
+  const filteredLast7DaysData = getLast7DaysData(apiData.data);
 
   // Get the last 7 days as an array of dates
-  const last7Days = getLast7Days(filteredData);
+  const last7Days = getLast7Days(filteredLast7DaysData);
 
   // Generate structured data for the chart
   const generateChartData = () => {
@@ -63,26 +58,52 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
       "": "white",
     };
 
-    filteredData.forEach((data) => {
-      const { date, sourceTag, minute_window } = data;
+    last7Days.forEach((date, index) => {
+      console.log("last7Days data forEach", date);
+      const filtered1DayData = filteredLast7DaysData.filter(
+        (data) => data.date === date
+      );
 
-      if (date !== last7Days[index]) {
-        index++;
+      for (const data of filtered1DayData) {
+        const { sourceTag, minute_window } = data;
+
+        startTime = moment(minute_window, "YYYY-MM-DD HH:mm").valueOf();
+        endTime = moment(minute_window, "YYYY-MM-DD HH:mm")
+          .add(5, "minutes")
+          .valueOf();
+
+        structuredData.push({
+          name: sourceTag,
+          value: [index, startTime, endTime, 300000, minute_window],
+          itemStyle: {
+            color: colorMap[sourceTag],
+          },
+        });
       }
 
-      startTime = moment(minute_window, "YYYY-MM-DD HH:mm").valueOf();
-      endTime = moment(minute_window, "YYYY-MM-DD HH:mm")
-        .add(5, "minutes")
-        .valueOf();
-
-      structuredData.push({
-        name: sourceTag,
-        value: [index, startTime, endTime, 300000, minute_window],
-        itemStyle: {
-          color: colorMap[sourceTag],
-        },
-      });
+      console.log(filtered1DayData);
     });
+
+    // filteredLast7DaysData.forEach((data) => {
+    //   const { date, sourceTag, minute_window } = data;
+
+    //   if (date !== last7Days[index]) {
+    //     index++;
+    //   }
+
+    //   startTime = moment(minute_window, "YYYY-MM-DD HH:mm").valueOf();
+    //   endTime = moment(minute_window, "YYYY-MM-DD HH:mm")
+    //     .add(5, "minutes")
+    //     .valueOf();
+
+    //   structuredData.push({
+    //     name: sourceTag,
+    //     value: [index, startTime, endTime, 300000, minute_window],
+    //     itemStyle: {
+    //       color: colorMap[sourceTag],
+    //     },
+    //   });
+    // });
 
     return structuredData;
   };
@@ -191,7 +212,8 @@ export const ChartContent: FC<Props> = ({ apiData }) => {
       <ReactECharts
         option={option}
         style={{ height: "500px" }}
-        theme={"theme"}
+        theme={"dark"}
+        notMerge={true}
       />
     );
   };
